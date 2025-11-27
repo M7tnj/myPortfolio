@@ -1,664 +1,583 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Truth Detection: ML, Neuroscience & Linguistics</title>
+    <title>Chapter 4: Discourse Types | Interactive Learning Lab</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Chosen Palette: Academic Neutral -->
-    <!-- Application Structure Plan: The application is a single-page, vertically-scrolling interactive report. This structure was chosen over a dashboard because the content is explanatory and best consumed in a logical, chapter-like flow. A sticky sidebar navigation (desktop) and a mobile menu provide a persistent table of contents, allowing the user (an academic) to either read linearly or jump to specific sections of interest. Key interactions include: 1) Clickable timeline items to reveal historical context. 2) Clickable cards to explore linguistic features. 3) Hover-to-reveal hotspots on a CSS-based brain diagram. 4) A live Chart.js chart demonstrating the P300 concept. 5) JS-powered filters for ML projects. 6) A tabbed interface to detail each proposed computational model, complete with CSS-based architecture diagrams. This structure is designed for exploration and deep understanding, directly addressing the user's research request. -->
-    <!-- Visualization & Content Choices: 
-        1.  Report Info (History): Goal: Show progression. Viz/Method: HTML/CSS list with JS click-to-reveal. Interaction: Click. Justification: Simple, text-heavy, avoids complex charts for sparse data. Library: Vanilla JS.
-        2.  Report Info (Linguistic Cues): Goal: Categorize features. Viz/Method: HTML/CSS grid of cards. Interaction: Click-to-reveal details. Justification: Organizes distinct feature categories intuitively. Library: Vanilla JS.
-        3.  Report Info (fMRI Brain Regions): Goal: Show key spatial areas. Viz/Method: CSS-based diagram (divs). Interaction: Hover-to-reveal info. Justification: Visualizes location (PFC, Insula) *without* using SVG. Library: Vanilla JS/CSS.
-        4.  Report Info (EEG P300 Concept): Goal: Explain CIT vs. Innocent. Viz/Method: Chart.js Bar Chart (Canvas). Interaction: Tooltip. Justification: The bar chart is the clearest way to show the *signal difference* (the P300 spike) which is the core concept. Library: Chart.js.
-        5.  Report Info (ML Projects): Goal: Organize examples. Viz/Method: Filterable HTML cards. Interaction: Button click (filter). Justification: Allows user to sort projects by modality (e.g., neuro, multi-modal). Library: Vanilla JS.
-        6.  Report Info (Proposed Models): Goal: Detail computational approaches. Viz/Method: Tabbed interface with HTML/CSS flow diagrams. Interaction: Click tabs. Justification: Cleanly separates the 5 complex proposals; CSS diagrams show model flow without SVG/Mermaid. Library: Vanilla JS.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #fdfdfc;
-            color: #333745;
+        /* Custom Scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
+        ::-webkit-scrollbar-track {
+            background: #f5f5f4;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e;
+        }
+
+        /* Chart Container Strict Styling */
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
             margin-left: auto;
             margin-right: auto;
-            height: 300px;
-            max-height: 400px;
+            height: 40vh;
+            min-height: 350px;
+            max-height: 500px;
         }
-        .sticky-nav a {
-            transition: all 0.2s ease-in-out;
-            border-left: 3px solid transparent;
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
         }
-        .sticky-nav a.active, .sticky-nav a:hover {
-            color: #0d9488;
-            border-left-color: #0d9488;
-            transform: translateX(4px);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .tab-btn {
-            transition: all 0.2s ease-in-out;
-        }
-        .tab-btn.active {
-            background-color: #0d9488;
-            color: #ffffff;
-        }
-        .model-diagram {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background-color: #f3f4f6;
-            border-radius: 0.5rem;
-            border: 1px solid #e5e7eb;
-        }
-        .model-diagram-row {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            width: 100%;
-        }
-        .model-block {
-            background-color: #ffffff;
-            border: 1px solid #d1d5db;
-            padding: 0.75rem 1rem;
-            border-radius: 0.375rem;
-            text-align: center;
-            font-weight: 600;
-            color: #374151;
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-        }
-        .model-arrow {
-            font-size: 1.5rem;
-            color: #6b7280;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .brain-diagram {
-            position: relative;
-            width: 250px;
-            height: 250px;
-            margin: 2rem auto;
-            background-color: #e0e7ff;
-            border: 2px solid #a5b4fc;
-            border-radius: 45% 55% 60% 40% / 50% 45% 55% 50%;
-            transform: rotate(-15deg);
-        }
-        .brain-hotspot {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            background-color: #ef4444;
-            border: 2px solid #ffffff;
-            border-radius: 50%;
-            cursor: pointer;
-            opacity: 0.7;
-            transition: all 0.2s ease-in-out;
-        }
-        .brain-hotspot:hover {
-            opacity: 1;
-            transform: scale(1.2);
-        }
-        .hotspot-pfc { top: 20%; left: 60%; }
-        .hotspot-insula { top: 45%; left: 45%; }
-        .hotspot-info {
-            display: none;
-            position: absolute;
-            bottom: 110%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #333745;
-            color: white;
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.375rem;
-            font-size: 0.875rem;
-            width: 200px;
-            z-index: 10;
-        }
-        .brain-hotspot:hover .hotspot-info {
-            display: block;
-        }
-        [data-section] {
-            padding-top: 6rem;
-            margin-top: -4rem;
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
     </style>
+    <!-- Chosen Palette: Warm Neutrals & Earth Tones (Stone background, Burnt Orange accents, Charcoal text) -->
+    <!-- Application Structure Plan: The app is designed as a "Discourse Classification Laboratory". It moves from the abstract (Definitions) to the concrete (Examples) and then to the analytical (Data Dimensions). 
+         1. Introduction: Sets the stage regarding the complexity of classifying text.
+         2. The Text Type Framework (Werlich): Uses an interactive card system to explore the 5 fundamental cognitive modes.
+         3. Multi-Dimensional Analysis (Biber): Uses a Radar Chart to visualize how different genres score on linguistic dimensions (narrative, involved, etc.). This allows users to "see" the difference between speech and writing.
+         4. Register Theory (Halliday): A functional dashboard to manipulate Field, Tenor, and Mode.
+         5. Genre Hybridity: A concluding section on how types mix.
+         This structure helps the user build a mental model: Start with basic blocks (Types) -> Measure them (Dimensions) -> Apply context (Register). -->
+    <!-- Visualization & Content Choices: 
+         1. Werlich's Types -> Interactive Cards -> To allow users to focus on one definition at a time without overwhelming text.
+         2. Biber's Dimensions -> Radar Chart (Chart.js) -> Chosen because Biber's analysis is multi-factorial. A radar chart perfectly illustrates the "shape" of a text type across multiple axes.
+         3. Register Analysis -> Dynamic Text Injection -> Users click buttons to change context variables, immediately seeing the definition update.
+         4. Genre Mix -> Donut Chart -> To visualize that most real-world texts (like an advertorial) are a percentage mix of different pure types.
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
 </head>
-<body class="bg-stone-50 text-slate-800">
+<body class="bg-stone-50 text-stone-800 font-sans antialiased selection:bg-orange-200 selection:text-orange-900">
 
-    <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col md:flex-row">
-
-            <button id="mobile-menu-btn" class="md:hidden fixed top-4 right-4 z-50 bg-white p-2 rounded-md shadow-lg">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
-            </button>
-
-            <nav id="sidebar-nav" class="sticky-nav fixed md:sticky top-0 h-screen w-64 bg-stone-100 p-8 transform -translate-x-full md:translate-x-0 transition-transform z-40 md:z-10 md:top-0 md:h-screen md:w-1/4 lg:w-1/5 md:flex md:flex-col md:justify-center">
-                <h3 class="text-xl font-bold text-teal-700 mb-6">Report Contents</h3>
-                <div class="flex flex-col space-y-3">
-                    <a href="#introduction" class="font-semibold text-slate-600 px-3 py-1">Introduction</a>
-                    <a href="#history" class="font-semibold text-slate-600 px-3 py-1">Historical View</a>
-                    <a href="#linguistic" class="font-semibold text-slate-600 px-3 py-1">Linguistic Cues</a>
-                    <a href="#neuro" class="font-semibold text-slate-600 px-3 py-1">Neuro-Cognitive Signatures</a>
-                    <a href="#ml_projects" class="font-semibold text-slate-600 px-3 py-1">Multi-modal ML Projects</a>
-                    <a href="#proposals" class="font-semibold text-slate-600 px-3 py-1">Proposed Approaches</a>
+    <!-- Navigation / Header -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl font-bold tracking-tight text-stone-900">Discourse<span class="text-orange-600">Lab</span></span>
+                    <span class="ml-3 px-2 py-1 text-xs font-semibold bg-stone-100 text-stone-600 rounded border border-stone-200 hidden sm:inline-block">Chapter 4 Summary</span>
                 </div>
-            </nav>
+                <nav class="hidden md:flex space-x-8">
+                    <button onclick="scrollToSection('intro')" class="text-stone-500 hover:text-orange-600 font-medium transition-colors">Introduction</button>
+                    <button onclick="scrollToSection('types')" class="text-stone-500 hover:text-orange-600 font-medium transition-colors">Werlich's Types</button>
+                    <button onclick="scrollToSection('dimensions')" class="text-stone-500 hover:text-orange-600 font-medium transition-colors">Biber's Dimensions</button>
+                    <button onclick="scrollToSection('register')" class="text-stone-500 hover:text-orange-600 font-medium transition-colors">Register</button>
+                </nav>
+            </div>
+        </div>
+    </header>
 
-            <main class="w-full md:w-3/4 lg:w-4/5 p-6 md:p-12">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-20">
 
-                <section id="introduction" data-section>
-                    <h1 class="text-4xl md:text-5xl font-bold text-teal-800 mb-4">Truth Detection at the Nexus</h1>
-                    <h2 class="text-2xl font-semibold text-slate-600 mb-6">Fusing ML, Neuroscience, and Linguistics</h2>
-                    <p class="text-lg text-slate-700 leading-relaxed mb-4">
-                        The quest for reliable truth detection has long been a challenge. Traditional methods, like the polygraph, are fundamentally limited as they measure physiological arousal (e.g., heart rate, skin conductance) which is a *correlate* of stress, not deception itself. An innocent person can be stressed, and a practiced liar can remain calm. This report explores the modern frontier of veracity assessment, moving beyond simple arousal to target the *cognitive processes* of deception.
+        <!-- Section 1: Introduction & The Core Problem -->
+        <section id="intro" class="fade-in">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-stone-900 mb-6 tracking-tight">Classifying Discourse</h1>
+                <p class="text-xl text-stone-600 leading-relaxed">
+                    How do we distinguish a recipe from a sermon, or a chat from a lecture? Chapter 4 explores the taxonomy of discourse. It moves beyond simple labels to analyze the underlying <strong>cognitive processes</strong> (Text Types) and <strong>social purposes</strong> (Genres).
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white rounded-2xl shadow-sm border border-stone-200 p-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-800 mb-4">Genre vs. Text Type</h2>
+                    <p class="text-stone-600 mb-4">
+                        One of the most critical distinctions in Chapter 4 is between <em>Genre</em> and <em>Text Type</em>. They are often used interchangeably, but Renkema argues for a strict separation based on criteria.
                     </p>
-                    <p class="text-lg text-slate-700 leading-relaxed">
-                        We are at the convergence of three powerful fields: <strong class="text-teal-700">Machine Learning (ML)</strong>, which can find complex patterns in data; <strong class="text-teal-700">Neuroscience (fMRI/EEG)</strong>, which can observe the brain's activity during the act of lying; and <strong class="text-teal-700">Linguistics</strong>, which analyzes the structure and content of speech. By fusing these domains, we can build models that are more accurate, robust, and insightful than any single-modality approach. This report outlines the history, key findings, and future computational approaches in this interdisciplinary field.
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-orange-100 text-orange-600 font-bold mt-1">G</span>
+                            <div class="ml-4">
+                                <p class="font-bold text-stone-900">Genre (The "Why")</p>
+                                <p class="text-sm text-stone-500">Classified by social purpose and culture. Examples: <em>Novel, Abstract, Recipe, Sermon.</em></p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="flex-shrink-0 h-6 w-6 flex items-center justify-center rounded-full bg-stone-200 text-stone-700 font-bold mt-1">T</span>
+                            <div class="ml-4">
+                                <p class="font-bold text-stone-900">Text Type (The "How")</p>
+                                <p class="text-sm text-stone-500">Classified by linguistic structure and cognitive mode. Examples: <em>Narrative, Argumentative, Descriptive.</em></p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-stone-50 p-6 rounded-xl border border-stone-100 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 -mt-4 -mr-4 w-24 h-24 bg-orange-100 rounded-full opacity-50"></div>
+                    <h3 class="text-lg font-semibold text-stone-800 mb-3 z-10 relative">Analogy: Architecture</h3>
+                    <p class="text-stone-600 italic mb-4 relative z-10">
+                        "A <strong>Genre</strong> is like the building's function (School, Hospital, Home). A <strong>Text Type</strong> is the building material (Brick, Glass, Concrete)."
                     </p>
-                </section>
-
-                <section id="history" data-section>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-6">A Brief History of Deception Detection</h2>
-                    <p class="text-lg text-slate-700 leading-relaxed mb-8">
-                        The journey from crude ordeals to modern machine learning has been a long one. The timeline below highlights the key technological and conceptual shifts. Click each era to learn more.
-                    </p>
-                    <div class="space-y-4" id="timeline-container">
-                        
-                        <div class="bg-white rounded-lg shadow-md border border-slate-200">
-                            <button class="timeline-toggle w-full text-left p-5 font-bold text-xl text-teal-700 flex justify-between items-center">
-                                <span>1900s-1930s: The Polygraph Era</span>
-                                <span class="timeline-icon text-2xl">+</span>
-                            </button>
-                            <div class="timeline-content hidden p-5 pt-0 text-slate-700 leading-relaxed">
-                                Originating as a medical device to track pulse, the polygraph was adapted by figures like Larson and Keeler for law enforcement. It combines measures of blood pressure, breathing, and galvanic skin response (GSR). Its fundamental flaw remains: it measures stress, not lies.
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow-md border border-slate-200">
-                            <button class="timeline-toggle w-full text-left p-5 font-bold text-xl text-teal-700 flex justify-between items-center">
-                                <span>1970s-1990s: Linguistic Analysis</span>
-                                <span class="timeline-icon text-2xl">+</span>
-                            </button>
-                            <div class="timeline-content hidden p-5 pt-0 text-slate-700 leading-relaxed">
-                                Researchers began to systematically study the *language* of deception. Early work suggested that liars use different speech patterns, such as fewer "I" statements, more negative emotion words, and less complex sentences. This work laid the foundation for computational linguistics in veracity.
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow-md border border-slate-200">
-                            <button class="timeline-toggle w-full text-left p-5 font-bold text-xl text-teal-700 flex justify-between items-center">
-                                <span>1980s-Present: The P300 (EEG)</span>
-                                <span class="timeline-icon text-2xl">+</span>
-                            </button>
-                            <div class="timeline-content hidden p-5 pt-0 text-slate-700 leading-relaxed">
-                                The discovery of the P300 Event-Related Potential (ERP) provided a new tool. This is a brainwave spike that occurs ~300ms after a person recognizes a *rare and meaningful* stimulus. This led to the Concealed Information Test (CIT), where a guilty suspect's brain "gives away" recognition of crime details.
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow-md border border-slate-200">
-                            <button class="timeline-toggle w-full text-left p-5 font-bold text-xl text-teal-700 flex justify-between items-center">
-                                <span>1990s-Present: fMRI & Cognitive Load</span>
-                                <span class="timeline-icon text-2xl">+</span>
-                            </button>
-                            <div class="timeline-content hidden p-5 pt-0 text-slate-700 leading-relaxed">
-                                Functional Magnetic Resonance Imaging (fMRI) allowed researchers to see *which* brain regions activate during deception. Studies consistently show increased activity in the prefrontal cortex and other areas related to *executive control* and *cognitive load*. This reinforces the idea that lying is "hard work" for the brain, as it must invent a falsehood while inhibiting the truth.
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow-md border border-slate-200">
-                            <button class="timeline-toggle w-full text-left p-5 font-bold text-xl text-teal-700 flex justify-between items-center">
-                                <span>2000s-Present: Machine Learning</span>
-                                <span class="timeline-icon text-2xl">+</span>
-                            </button>
-                            <div class="timeline-content hidden p-5 pt-0 text-slate-700 leading-relaxed">
-                                With more data, machine learning (ML) models (like SVMs, Random Forests, and now Deep Learning) began to outperform human experts. ML can analyze hundreds of linguistic, vocal, and physiological features simultaneously. The current frontier is *multi-modal ML*, which fuses these different data streams for the most robust predictions.
-                            </div>
-                        </div>
-
+                    <div class="mt-4 p-4 bg-white rounded border-l-4 border-orange-500 shadow-sm">
+                        <p class="text-sm font-medium text-stone-800">Key Takeaway:</p>
+                        <p class="text-sm text-stone-500">A single Genre (e.g., a News Article) can contain multiple Text Types (Narrative paragraphs + Descriptive paragraphs).</p>
                     </div>
-                </section>
+                </div>
+            </div>
+        </section>
 
-                <section id="linguistic" data-section>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-6">Linguistic Cues to Deception</h2>
-                    <p class="text-lg text-slate-700 leading-relaxed mb-8">
-                        Language is a rich source of data. Deception often leaks through *how* we say something, not just *what* we say. Research has identified several consistent patterns. Click the categories below for details.
-                    </p>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="linguistic-grid">
+        <!-- Section 2: Werlich's 5 Text Types -->
+        <section id="types" class="fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-stone-900 mb-3">Werlich's 5 Text Types</h2>
+                <p class="text-lg text-stone-600 max-w-4xl">
+                    Egon Werlich proposed a highly influential typology based on <strong>cognitive processes</strong> of the human mind. Explore the 5 types below to see how our brain's focus shapes the text we produce.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Navigation List -->
+                <div class="space-y-3 lg:col-span-1">
+                    <button onclick="updateWerlich('descriptive')" id="btn-descriptive" class="werlich-btn w-full text-left px-6 py-4 rounded-xl bg-white border border-stone-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between group active-type">
+                        <span class="font-bold text-stone-700 group-hover:text-orange-600">1. Descriptive</span>
+                        <span class="text-stone-400 group-hover:text-orange-500">👁️</span>
+                    </button>
+                    <button onclick="updateWerlich('narrative')" id="btn-narrative" class="werlich-btn w-full text-left px-6 py-4 rounded-xl bg-white border border-stone-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
+                        <span class="font-bold text-stone-700 group-hover:text-orange-600">2. Narrative</span>
+                        <span class="text-stone-400 group-hover:text-orange-500">⏱️</span>
+                    </button>
+                    <button onclick="updateWerlich('expository')" id="btn-expository" class="werlich-btn w-full text-left px-6 py-4 rounded-xl bg-white border border-stone-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
+                        <span class="font-bold text-stone-700 group-hover:text-orange-600">3. Expository</span>
+                        <span class="text-stone-400 group-hover:text-orange-500">🧠</span>
+                    </button>
+                    <button onclick="updateWerlich('argumentative')" id="btn-argumentative" class="werlich-btn w-full text-left px-6 py-4 rounded-xl bg-white border border-stone-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
+                        <span class="font-bold text-stone-700 group-hover:text-orange-600">4. Argumentative</span>
+                        <span class="text-stone-400 group-hover:text-orange-500">⚖️</span>
+                    </button>
+                    <button onclick="updateWerlich('instructive')" id="btn-instructive" class="werlich-btn w-full text-left px-6 py-4 rounded-xl bg-white border border-stone-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between group">
+                        <span class="font-bold text-stone-700 group-hover:text-orange-600">5. Instructive</span>
+                        <span class="text-stone-400 group-hover:text-orange-500">👉</span>
+                    </button>
+                </div>
+
+                <!-- Display Panel -->
+                <div class="lg:col-span-2 bg-white rounded-2xl border border-stone-200 shadow-lg p-8 flex flex-col justify-between h-full relative overflow-hidden transition-all duration-300" id="werlich-panel">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-9xl font-black text-stone-900 pointer-events-none" id="werlich-icon">👁️</div>
+                    
+                    <div>
+                        <div class="flex items-center space-x-3 mb-2">
+                            <span class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-bold uppercase tracking-wide">Focus</span>
+                            <span class="text-stone-400 text-sm font-medium" id="werlich-focus">Phenomenal (Space)</span>
+                        </div>
+                        <h3 class="text-3xl font-bold text-stone-900 mb-6" id="werlich-title">Descriptive Type</h3>
                         
-                        <div class="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden">
-                            <button class="linguistic-toggle w-full text-left p-5 font-bold text-xl text-teal-700">
-                                Quantity & Complexity
-                            </button>
-                            <div class="linguistic-content hidden p-5 pt-0 text-slate-700 leading-relaxed">
-                                Deceivers often provide less information. Their stories tend to be shorter, with less complex sentence structures and a less diverse vocabulary. This is a sign of cognitive load—it's hard to invent a rich, detailed story.
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden">
-                            <button class="linguistic-toggle w-full text-left p-5 font-bold text-xl text-teal-700">
-                                Non-Immediacy
-                            </button>
-                            <div class="linguistic-content hidden p-5 pt-0 text-slate-700 leading-relaxed">
-                                Liars tend to psychologically distance themselves from their story. This manifests as using fewer first-person pronouns (e.g., "I," "me," "my") and using more linguistic "hedges" or modifiers (e.g., "maybe," "perhaps," "sort of").
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden">
-                            <button class="linguistic-toggle w-full text-left p-5 font-bold text-xl text-teal-700">
-                                Affect & Emotion
-                            </button>
-                            <div class="linguistic-content hidden p-5 pt-0 text-slate-700 leading-relaxed">
-                                Deceptive narratives often contain more negative emotion words (e.g., "sad," "angry," "hate"). This can be a sign of guilt or discomfort with the deception. They may also show a mismatch between stated emotion and vocal tone.
-                            </div>
-                        </div>
-
-                        <div class="bg-white rounded-lg shadow-md border border-slate-200 overflow-hidden">
-                            <button class="linguistic-toggle w-full text-left p-5 font-bold text-xl text-teal-700">
-                                Specificity
-                            </button>
-                            <div class="linguistic-content hidden p-5 pt-0 text-slate-700 leading-relaxed">
-                                Truthful accounts are often rich in specific, verifiable details (e.g., times, places, sensory information). Deceptive accounts tend to be more vague and general, as these details are harder to invent and maintain consistently.
-                            </div>
-                        </div>
-
-                    </div>
-                </section>
-
-                <section id="neuro" data-section>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-6">Neuro-Cognitive Signatures</h2>
-                    <p class="text-lg text-slate-700 leading-relaxed mb-8">
-                        Instead of measuring stress, neuroscience targets the brain itself. Deception is an executive function that creates a measurable cognitive load. The two primary tools for this are fMRI and EEG.
-                    </p>
-                    <div class="flex flex-col md:flex-row gap-8">
-                        
-                        <div class="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md border border-slate-200">
-                            <h3 class="text-2xl font-bold text-teal-700 mb-4">fMRI: The "Where" of Deception</h3>
-                            <p class="text-slate-700 mb-4">fMRI (Functional Magnetic Resonance Imaging) measures blood flow to different brain regions. Deception consistently activates areas associated with executive control and conflict monitoring.</p>
-                            <p class="text-slate-700 mb-4"><strong>Key Regions:</strong> Hover over the hotspots on the diagram.</p>
-                            <div class="brain-diagram">
-                                <div class="brain-hotspot hotspot-pfc">
-                                    <div class="hotspot-info"><strong>Prefrontal Cortex (PFC):</strong> Involved in working memory, planning, and *inhibiting* the truthful response.</div>
-                                </div>
-                                <div class="brain-hotspot hotspot-insula">
-                                    <div class="hotspot-info"><strong>Anterior Insula:</strong> Linked to emotional awareness, conflict, and the subjective feeling of "wrongness" or arousal.</div>
-                                </div>
-                            </div>
-                            <p class="text-slate-700 mt-4"><strong>Challenges:</strong> fMRI is extremely expensive, slow, and requires the subject to be perfectly still. Furthermore, it's hard to prove that the activation is *specific* to lying and not just to general cognitive effort or anxiety.</p>
-                        </div>
-                        
-                        <div class="w-full md:w-1/2 bg-white p-6 rounded-lg shadow-md border border-slate-200">
-                            <h3 class="text-2xl font-bold text-teal-700 mb-4">EEG: The "When" of Deception</h3>
-                            <p class="text-slate-700 mb-4">EEG (Electroencephalography) measures electrical activity with millisecond-precision. Its most powerful use is in the <strong>Concealed Information Test (CIT)</strong>, which uses the <strong>P300</strong> brainwave.</p>
-                            <p class="text-slate-700 mb-4">The P300 is a "recognition spike" that occurs when a person sees a rare, meaningful item. In a CIT, a suspect is shown items (e.g., potential murder weapons). An innocent person's brain treats all items as irrelevant. A guilty person's brain will involuntarily "spike" when they see the *actual* item they recognize from the crime.</p>
-                            <div class="chart-container mt-6">
-                                <canvas id="p300Chart"></canvas>
-                            </div>
+                        <div class="prose prose-stone mb-6">
+                            <p class="text-lg text-stone-600" id="werlich-desc">
+                                Focuses on factual phenomena in a spatial context. It deals with the perception of space and the arrangement of objects or people within it.
+                            </p>
                         </div>
                     </div>
-                </section>
-                
-                <section id="ml_projects" data-section>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-6">Multi-modal ML Projects</h2>
-                    <p class="text-lg text-slate-700 leading-relaxed mb-8">
-                        The most promising results come from *fusing* data sources. Machine learning models, particularly deep learning, are adept at finding patterns across different modalities (e.g., text, audio, video, neuro-signals). Filter the examples below.
+
+                    <div class="bg-stone-50 rounded-xl p-5 border-l-4 border-orange-500">
+                        <h4 class="text-sm font-bold text-stone-400 uppercase mb-2">Linguistic Markers</h4>
+                        <p class="text-stone-700 italic font-serif" id="werlich-markers">
+                            Locative adverbs (left, right, above), existential verbs (be, exist), state adjectives.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Biber's Multi-Dimensional Analysis -->
+        <section id="dimensions" class="bg-stone-900 rounded-3xl p-8 md:p-12 text-white fade-in shadow-2xl">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span class="h-3 w-3 bg-blue-400 rounded-full"></span>
+                        <span class="text-blue-200 text-sm font-semibold tracking-wider uppercase">Quantitative Linguistics</span>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Biber's Multi-Dimensional Analysis</h2>
+                    <p class="text-stone-300 mb-6 leading-relaxed">
+                        Douglas Biber proved that we cannot just split texts into "Speech" vs "Writing." Instead, texts vary across multiple linguistic dimensions simultaneously.
                     </p>
-                    <div class="flex flex-wrap gap-2 mb-8" id="filter-container">
-                        <button class="filter-btn bg-teal-600 text-white px-4 py-2 rounded-full font-semibold" data-filter="all">All</button>
-                        <button class="filter-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-full font-semibold" data-filter="neuro">Linguistic + Neuro</button>
-                        <button class="filter-btn bg-slate-200 text-slate-700 px-4 py-2 rounded-full font-semibold" data-filter="physio">Linguistic + Physio/Behavioral</button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="projects-grid">
-                        
-                        <div class="project-card bg-white p-6 rounded-lg shadow-md border border-slate-200" data-type="physio">
-                            <h3 class="text-xl font-bold text-teal-700 mb-2">Bimodal CNN (Text + Physiological)</h3>
-                            <p class="text-slate-700">This approach uses a Convolutional Neural Network (CNN) to analyze two streams: 1) Linguistic features extracted from interview transcripts, and 2) Physiological data (like heart rate, GSR) averaged over time. Research shows this bimodal fusion significantly outperforms models trained on only one modality.</p>
-                            <div class="mt-4 text-sm font-semibold text-slate-500">Modalities: Text, Physiological</div>
-                        </div>
-
-                        <div class="project-card bg-white p-6 rounded-lg shadow-md border border-slate-200" data-type="physio">
-                            <h3 class="text-xl font-bold text-teal-700 mb-2">Real-time AVT Fusion (Audio + Video + Text)</h3>
-                            <p class="text-slate-700">A system designed for real-time analysis, this model fuses three data streams. It extracts acoustic features (vocal pitch, jitter), visual features (facial micro-expressions, gaze), and linguistic features (from real-time transcription). Fusing these behavioral cues has achieved very high accuracy in high-stakes scenarios.</p>
-                            <div class="mt-4 text-sm font-semibold text-slate-500">Modalities: Audio, Video, Text</div>
-                        </div>
-                        
-                        <div class="project-card bg-white p-6 rounded-lg shadow-md border border-slate-200" data-type="neuro">
-                            <h3 class="text-xl font-bold text-teal-700 mb-2">EEG-Linguistic Correlation</h3>
-                            <p class="text-slate-700">These models aim to correlate EEG signals (like ERPs or frequency band power) with specific linguistic events. For example, does the brain show a conflict-related signal (like an N400 or P300) *immediately* after a subject uses a hedge word ("maybe") or a non-committal phrase? This tight temporal link is a powerful area of research.</p>
-                            <div class="mt-4 text-sm font-semibold text-slate-500">Modalities: Text, EEG</div>
-                        </div>
-
-                        <div class="project-card bg-white p-6 rounded-lg shadow-md border border-slate-200" data-type="physio">
-                            <h3 class="text-xl font-bold text-teal-700 mb-2">Gaze + Speech Attention Models</h3>
-                            <p class="text-slate-700">Using an LSTM (Long Short-Term Memory) network with an attention mechanism, this model analyzes gaze patterns and speech features. The model learns that, for example, averted gaze *while* discussing a key topic, or a mismatch between gaze and semantic focus, is highly predictive of deception.</p>
-                            <div class="mt-4 text-sm font-semibold text-slate-500">Modalities: Gaze, Audio, Text</div>
-                        </div>
-                    </div>
-                </section>
-
-                <section id="proposals" data-section>
-                    <h2 class="text-3xl font-bold text-slate-800 mb-6">Proposed Computational Approaches</h2>
-                    <p class="text-lg text-slate-700 leading-relaxed mb-8">
-                        Based on this research, several advanced computational projects can be proposed. These models aim to create more robust, accurate, and insightful systems by leveraging multi-modal data and modern deep learning architectures.
+                    <p class="text-stone-400 text-sm mb-8">
+                        The chart maps how two different genres score on Biber's dimensions. Notice how "Conversation" is highly involved but non-abstract, whereas "Academic Prose" is the opposite.
                     </p>
                     
-                    <div class="bg-white rounded-lg shadow-md border border-slate-200">
-                        <div class="flex flex-wrap border-b border-slate-200" id="tabs-container">
-                            <button class="tab-btn active font-semibold py-3 px-5" data-tab="model1">1. Fusion (EEG+Text)</button>
-                            <button class="tab-btn font-semibold py-3 px-5 text-slate-600" data-tab="model2">2. Cognitive Load (Vocal+Gaze)</button>
-                            <button class="tab-btn font-semibold py-3 px-5 text-slate-600" data-tab="model3">3. 3D-CNN (fMRI)</button>
-                            <button class="tab-btn font-semibold py-3 px-5 text-slate-600" data-tab="model4">4. GAN Deception Generator</button>
-                            <button class="tab-btn font-semibold py-3 px-5 text-slate-600" data-tab="model5">5. P300 Feature Classifier</button>
+                    <!-- Controls -->
+                    <div class="bg-stone-800 p-6 rounded-xl border border-stone-700">
+                        <h4 class="text-white font-bold mb-4">Compare Genres:</h4>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="updateChartData('convo_academic')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded text-sm font-medium transition-colors text-white">Conversation vs. Academic</button>
+                            <button onclick="updateChartData('fiction_news')" class="px-4 py-2 bg-stone-700 hover:bg-stone-600 rounded text-sm font-medium transition-colors text-stone-200">Fiction vs. News</button>
                         </div>
-
-                        <div class="p-6">
-                            <div class="tab-content" id="model1">
-                                <h3 class="text-2xl font-bold text-teal-700 mb-4">Model 1: Multi-modal Fusion (EEG+Text)</h3>
-                                <p class="text-slate-700 mb-4"><strong>Concept:</strong> A deep learning model that simultaneously processes linguistic content and time-locked EEG data. The model would learn not just *what* is said, but also the brain's real-time reaction to saying it.</p>
-                                <p class="text-slate-700 mb-4"><strong>Data Inputs:</strong> 1) Synchronized, pre-processed EEG time-series data. 2) Transcribed text, aligned with the EEG data.</p>
-                                <p class="text-slate-700 mb-4"><strong>Architecture:</strong> A two-branch network:</p>
-                                <div class="model-diagram my-6">
-                                    <div class="model-diagram-row">
-                                        <div class="model-block">EEG Time-Series</div>
-                                        <div class="model-block">Transcribed Text</div>
-                                    </div>
-                                    <div class="model-diagram-row">
-                                        <div class="model-arrow">↓</div>
-                                        <div class="model-arrow">↓</div>
-                                    </div>
-                                    <div class="model-diagram-row">
-                                        <div class="model-block">1D CNN / LSTM</div>
-                                        <div class="model-block">BERT / Transformer</div>
-                                    </div>
-                                    <div class="model-diagram-row">
-                                        <div class="model-arrow">↘</div>
-                                        <div class="model-arrow">↙</div>
-                                    </div>
-                                    <div class="model-block">Concatenated Feature Vector</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block">MLP Classifier</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block font-bold text-teal-700">Prediction (Truth / Deception)</div>
-                                </div>
-                                <p class="text-slate-700"><strong>Key Challenges:</strong> Precise time-synchronization of text and EEG signals. High signal-to-noise ratio required for EEG. Large, labeled datasets are scarce.</p>
-                            </div>
-
-                            <div class="tab-content hidden" id="model2">
-                                <h3 class="text-2xl font-bold text-teal-700 mb-4">Model 2: Real-time Cognitive Load Monitor (Vocal+Gaze)</h3>
-                                <p class="text-slate-700 mb-4"><strong>Concept:</strong> A model that *infers* cognitive load, a strong proxy for deception, by analyzing non-invasive behavioral cues: vocal prosody and eye-tracking.</p>
-                                <p class="text-slate-700 mb-4"><strong>Data Inputs:</strong> 1) Raw audio stream (for vocal features like pitch, jitter, shimmer, speech pace). 2) Eye-tracking data (saccade frequency, pupil dilation, gaze aversion).</p>
-                                <p class="text-slate-700 mb-4"><strong>Architecture:</strong> A time-series model (like an RNN or LSTM) that processes features extracted from both streams.</p>
-                                <div class="model-diagram my-6">
-                                    <div class="model-diagram-row">
-                                        <div class="model-block">Audio Stream</div>
-                                        <div class="model-block">Eye-Tracker Data</div>
-                                    </div>
-                                    <div class="model-diagram-row">
-                                        <div class="model-arrow">↓</div>
-                                        <div class="model-arrow">↓</div>
-                                    </div>
-                                    <div class="model-diagram-row">
-                                        <div class="model-block">Feature Extraction (e.g., MFCCs, Pitch)</div>
-                                        <div class="model-block">Feature Extraction (e.g., Saccades)</div>
-                                    </div>
-                                    <div class="model-diagram-row">
-                                        <div class="model-arrow">↘</div>
-                                        <div class="model-arrow">↙</div>
-                                    </div>
-                                    <div class="model-block">Fused Time-Series Features</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block">LSTM / GRU Network</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block font-bold text-teal-700">Real-time Cognitive Load Score</div>
-                                </div>
-                                <p class="text-slate-700"><strong>Key Challenges:</strong> Real-time feature extraction is computationally intensive. Gaze data can be noisy. Calibrating a "baseline" cognitive load for each individual.</p>
-                            </div>
-
-                            <div class="tab-content hidden" id="model3">
-                                <h3 class="text-2xl font-bold text-teal-700 mb-4">Model 3: 3D Convolutional Neural Network (fMRI)</h3>
-                                <p class="text-slate-700 mb-4"><strong>Concept:</strong> Leverage the full spatial *and* temporal information in an fMRI scan. Instead of analyzing pre-selected regions, a 3D-CNN can learn complex 4D spatio-temporal patterns across the entire brain that predict deception.</p>
-                                <p class="text-slate-700 mb-4"><strong>Data Inputs:</strong> Full 4D fMRI BOLD signal data (3D brain volume over time), labeled by trial (truth/deception).</p>
-                                <p class="text-slate-700 mb-4"><strong>Architecture:</strong> A 3D-CNN (or a Video-CNN architecture) that treats the time-series of brain scans as a "video."</p>
-                                <div class="model-diagram my-6">
-                                    <div class="model-block">4D fMRI Scan Data (x, y, z, time)</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block">(3D + time) Convolutional Layers</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block">Pooling & Flattening</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block">Fully Connected Classifier</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block font-bold text-teal-700">Prediction (Truth / Deception)</div>
-                                </div>
-                                <p class="text-slate-700"><strong>Key Challenges:</strong> Extremely high dimensionality of data. Very small datasets (fMRI studies are expensive). High risk of overfitting. Disentangling "deception" patterns from "task-related" patterns.</p>
-                            </div>
-                            
-                            <div class="tab-content hidden" id="model4">
-                                <h3 class="text-2xl font-bold text-teal-700 mb-4">Model 4: Adversarial Deception Generator (GAN)</h3>
-                                <p class="text-slate-700 mb-4"><strong>Concept:</strong> Use a Generative Adversarial Network (GAN) to build a more robust *detector*. A "Generator" network tries to create deceptive text that *mimics* truthful language. A "Discriminator" network (our detector) is trained to distinguish real truthful text from the Generator's "fake" deceptive text.</p>
-                                <p class="text-slate-700 mb-4"><strong>Data Inputs:</strong> Large corpus of known truthful text and known deceptive text.</p>
-                                <p class="text-slate-700 mb-4"><strong>Architecture:</strong> A classic GAN setup, likely using Transformer-based models (like GPT/BERT) as the Generator and Discriminator.</p>
-                                <div class="model-diagram my-6">
-                                    <div class="model-block">Noise + Truthful Context</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block">Generator (e.g., GPT-2)</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block">"Fake" Deceptive Text</div>
-                                    <div class="model-arrow">↘</div>
-                                    <div class="model-block">Discriminator (e.g., BERT)</div>
-                                    <div class="model-arrow">↙</div>
-                                    <div class="model-block">"Real" Deceptive Text</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block font-bold text-teal-700">Prediction (Real / Fake)</div>
-                                </div>
-                                <p class="text-slate-700"><strong>Key Challenges:</strong> Training GANs for text is notoriously difficult. Defining a clear "style" of deception for the generator to learn. The model might learn to exploit dataset biases rather than true deceptive cues.</p>
-                            </div>
-
-                            <div class="tab-content hidden" id="model5">
-                                <h3 class="text-2xl font-bold text-teal-700 mb-4">Model 5: P300 Feature-based Classifier (EEG)</h3>
-                                <p class="text-slate-700 mb-4"><strong>Concept:</strong> A more "classic" ML approach that is highly effective and interpretable. Instead of feeding raw EEG to a deep learning model, this extracts well-understood features from the P300 component (e.g., amplitude, latency) and feeds them to a powerful but simpler classifier.</p>
-                                <p class="text-slate-700 mb-4"><strong>Data Inputs:</strong> Epoched EEG data, time-locked to the "probe" (crime detail) and "irrelevant" stimuli from a CIT.</p>
-                                <p class="text-slate-700 mb-4"><strong>Architecture:</strong> A feature-extraction pipeline followed by a classifier.</p>
-                                <div class="model-diagram my-6">
-                                    <div class="model-block">EEG Epochs (Probe vs. Irrelevant)</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block">Feature Extraction Pipeline</div>
-                                    <div class="model-block" style="background-color: #f3f4f6; border: none; box-shadow: none; font-weight: 400; text-align: left; padding: 0 1rem;">
-                                        - P300 Amplitude
-                                        <br>- P300 Latency
-                                        <br>- Frequency Band Power (Alpha, Theta)
-                                    </div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block">Feature Vector</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block">XGBoost / SVM / Random Forest</div>
-                                    <div class="model-arrow">↓</div>
-                                    <div class="model-block font-bold text-teal-700">Prediction (Guilty / Innocent)</div>
-                                </div>
-                                <p class="text-slate-700"><strong>Key Challenges:</strong> Susceptible to countermeasures (though new protocols reduce this). Signal quality is paramount. Requires a strict, controlled CIT paradigm, which isn't always possible.</p>
-                            </div>
+                        <div class="mt-4 pt-4 border-t border-stone-700">
+                             <p class="text-xs text-stone-500 mt-2">
+                                <strong class="text-stone-300">Dimension 1 (Involved):</strong> Private verbs, contractions, 1st person pronouns.<br>
+                                <strong class="text-stone-300">Dimension 2 (Narrative):</strong> Past tense, 3rd person pronouns.
+                            </p>
                         </div>
                     </div>
-                </section>
-            </main>
+                </div>
+
+                <!-- Radar Chart Container -->
+                <div class="bg-stone-800 rounded-2xl p-4 border border-stone-700 shadow-inner flex flex-col justify-center items-center">
+                    <div class="chart-container">
+                        <canvas id="biberChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Register (Halliday) -->
+        <section id="register" class="fade-in">
+             <div class="mb-10 text-center">
+                <h2 class="text-3xl font-bold text-stone-900 mb-3">Register & Situation</h2>
+                <p class="text-lg text-stone-600 max-w-2xl mx-auto">
+                    According to Halliday's Systemic Functional Linguistics, the type of language we use (Register) is determined by three variables of the context of situation. Adjust the variables below to see how they shape discourse.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Field Card -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 card-hover">
+                    <div class="h-12 w-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center text-2xl mb-4">🌍</div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">Field</h3>
+                    <p class="text-sm text-stone-500 mb-4 h-10">What is happening? The topic and nature of the activity.</p>
+                    <select id="select-field" onchange="updateRegister()" class="w-full p-2 bg-stone-50 border border-stone-200 rounded text-stone-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                        <option value="science">Scientific Research</option>
+                        <option value="cooking">Cooking Dinner</option>
+                        <option value="politics">Political Debate</option>
+                    </select>
+                </div>
+
+                <!-- Tenor Card -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 card-hover">
+                    <div class="h-12 w-12 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center text-2xl mb-4">👥</div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">Tenor</h3>
+                    <p class="text-sm text-stone-500 mb-4 h-10">Who is taking part? The relationship between participants.</p>
+                    <select id="select-tenor" onchange="updateRegister()" class="w-full p-2 bg-stone-50 border border-stone-200 rounded text-stone-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="expert">Expert to Novice</option>
+                        <option value="friend">Friend to Friend</option>
+                        <option value="formal">Official to Public</option>
+                    </select>
+                </div>
+
+                <!-- Mode Card -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 card-hover">
+                    <div class="h-12 w-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-2xl mb-4">📡</div>
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">Mode</h3>
+                    <p class="text-sm text-stone-500 mb-4 h-10">What role is language playing? The channel (written/spoken).</p>
+                    <select id="select-mode" onchange="updateRegister()" class="w-full p-2 bg-stone-50 border border-stone-200 rounded text-stone-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="written">Written/Reflected</option>
+                        <option value="spoken">Spoken/Spontaneous</option>
+                        <option value="digital">Digital/Instant</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Dynamic Result Box -->
+            <div class="mt-8 bg-stone-800 rounded-2xl p-8 text-center text-white shadow-xl transition-all" id="register-result">
+                <p class="text-stone-400 uppercase tracking-widest text-xs font-bold mb-4">Predicted Text Output</p>
+                <div id="register-output" class="text-xl md:text-2xl font-serif italic leading-relaxed">
+                    "Select options above to generate a text sample."
+                </div>
+                <div class="mt-6 flex justify-center space-x-2">
+                    <span id="tag-field" class="px-3 py-1 bg-stone-700 rounded-full text-xs text-stone-300">Topic</span>
+                    <span id="tag-tenor" class="px-3 py-1 bg-stone-700 rounded-full text-xs text-stone-300">Relation</span>
+                    <span id="tag-mode" class="px-3 py-1 bg-stone-700 rounded-full text-xs text-stone-300">Channel</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Hybridity Visualization -->
+        <section class="fade-in">
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center bg-white rounded-3xl p-8 border border-stone-200 shadow-sm">
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-900 mb-4">Textual Hybridity</h2>
+                    <p class="text-stone-600 mb-6">
+                        Pure text types rarely exist in isolation. Most discourses are <strong>Hybrids</strong>. This chart shows the composition of an "Advertorial" (Advertisement + Editorial).
+                    </p>
+                    <ul class="space-y-2 text-sm text-stone-600">
+                        <li class="flex items-center"><span class="w-3 h-3 rounded-full bg-orange-500 mr-2"></span> <strong>Argumentative (40%):</strong> Persuading to buy.</li>
+                        <li class="flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 mr-2"></span> <strong>Expository (30%):</strong> Explaining the product features.</li>
+                        <li class="flex items-center"><span class="w-3 h-3 rounded-full bg-green-500 mr-2"></span> <strong>Descriptive (20%):</strong> Describing the look/feel.</li>
+                        <li class="flex items-center"><span class="w-3 h-3 rounded-full bg-yellow-500 mr-2"></span> <strong>Narrative (10%):</strong> User testimonials/stories.</li>
+                    </ul>
+                </div>
+                <div class="flex justify-center">
+                    <div class="chart-container" style="height: 300px; max-width: 300px;">
+                        <canvas id="hybridChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-12 mt-20">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="font-bold text-white mb-2">Introduction to Discourse Studies</p>
+            <p class="text-sm">Based on Chapter 4: Discourse Types</p>
+            <p class="text-xs mt-8 text-stone-600">Interactive Summary Generated for Educational Purposes.</p>
         </div>
-    </div>
+    </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        // --- DATA & STATE MANAGEMENT ---
+
+        // 1. Werlich's Text Types Data
+        const werlichData = {
+            descriptive: {
+                title: "Descriptive Type",
+                focus: "Phenomenal (Space)",
+                icon: "👁️",
+                desc: "Focuses on factual phenomena in a spatial context. It deals with the perception of space and the arrangement of objects, people, or atmosphere within it.",
+                markers: "Locative adverbs (left, right, above), existential verbs (be, exist), state adjectives."
+            },
+            narrative: {
+                title: "Narrative Type",
+                focus: "Temporal (Time)",
+                icon: "⏱️",
+                desc: "Focuses on factual or conceptual phenomena in time. It deals with the sequencing of events and actions.",
+                markers: "Action verbs, temporal adverbs (then, after, suddenly), past tense."
+            },
+            expository: {
+                title: "Expository Type",
+                focus: "Comprehension (Analysis)",
+                icon: "🧠",
+                desc: "Focuses on analyzing concepts or deconstructing constituent elements. It explains 'how' or 'why' something is the way it is (definitions, explications).",
+                markers: "State verbs, causal connectors (because, since), general nouns."
+            },
+            argumentative: {
+                title: "Argumentative Type",
+                focus: "Judging (Evaluation)",
+                icon: "⚖️",
+                desc: "Focuses on the relations between concepts to advocate a position. It proposes relations between concepts through evaluation.",
+                markers: "Evaluative adjectives, modal verbs (must, should), concessive connectors (however, although)."
+            },
+            instructive: {
+                title: "Instructive Type",
+                focus: "Planning (Future Action)",
+                icon: "👉",
+                desc: "Focuses on future behavior. It tells the receiver what to do.",
+                markers: "Imperatives, modal auxiliaries, linear enumeration (first, second)."
+            }
+        };
+
+        // 2. Biber's Dimensions Data
+        // D1: Involved vs Informational | D2: Narrative vs Non-Narrative | D3: Explicit vs Situation-Dependent
+        const biberDataSets = {
+            convo_academic: {
+                labels: ['Involvedness', 'Narrative', 'Elaborated Ref.', 'Overt Persuasion', 'Abstractness'],
+                datasets: [
+                    {
+                        label: 'Conversation',
+                        data: [35, 15, -5, 5, -10],
+                        fill: true,
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgb(59, 130, 246)',
+                        pointBackgroundColor: 'rgb(59, 130, 246)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(59, 130, 246)'
+                    },
+                    {
+                        label: 'Academic Prose',
+                        data: [-15, -5, 15, 0, 25],
+                        fill: true,
+                        backgroundColor: 'rgba(234, 88, 12, 0.2)',
+                        borderColor: 'rgb(234, 88, 12)',
+                        pointBackgroundColor: 'rgb(234, 88, 12)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(234, 88, 12)'
+                    }
+                ]
+            },
+            fiction_news: {
+                labels: ['Involvedness', 'Narrative', 'Elaborated Ref.', 'Overt Persuasion', 'Abstractness'],
+                datasets: [
+                    {
+                        label: 'Fiction',
+                        data: [10, 30, -2, 2, -5],
+                        fill: true,
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgb(16, 185, 129)',
+                        pointBackgroundColor: 'rgb(16, 185, 129)',
+                        pointBorderColor: '#fff'
+                    },
+                    {
+                        label: 'Official Documents',
+                        data: [-10, -10, 10, 5, 15],
+                        fill: true,
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        borderColor: 'rgb(99, 102, 241)',
+                        pointBackgroundColor: 'rgb(99, 102, 241)',
+                        pointBorderColor: '#fff'
+                    }
+                ]
+            }
+        };
+
+        // --- FUNCTIONS ---
+
+        // Navigation
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Werlich Type Updater
+        function updateWerlich(type) {
+            // Update UI State
+            document.querySelectorAll('.werlich-btn').forEach(btn => {
+                btn.classList.remove('border-orange-500', 'bg-orange-50');
+                btn.classList.add('bg-white', 'border-stone-200');
+            });
+            const activeBtn = document.getElementById(`btn-${type}`);
+            activeBtn.classList.remove('bg-white', 'border-stone-200');
+            activeBtn.classList.add('border-orange-500', 'bg-orange-50');
+
+            // Update Content
+            const data = werlichData[type];
+            const panel = document.getElementById('werlich-panel');
             
-            const p300Ctx = document.getElementById('p300Chart').getContext('2d');
-            new Chart(p300Ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Irrelevant Item 1', 'Irrelevant Item 2', 'Crime Detail (Probe)', 'Irrelevant Item 3', 'Irrelevant Item 4'],
-                    datasets: [
-                        {
-                            label: 'Innocent Subject',
-                            data: [10, 12, 11, 9, 13],
-                            backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                            borderColor: 'rgba(59, 130, 246, 1)',
-                            borderWidth: 1
-                        },
-                        {
-                            label: 'Guilty Subject (P300)',
-                            data: [11, 9, 35, 10, 12],
-                            backgroundColor: 'rgba(239, 68, 68, 0.6)',
-                            borderColor: 'rgba(239, 68, 68, 1)',
-                            borderWidth: 1
-                        }
-                    ]
-                },
+            // Simple fade effect
+            panel.style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('werlich-title').innerText = data.title;
+                document.getElementById('werlich-focus').innerText = data.focus;
+                document.getElementById('werlich-desc').innerText = data.desc;
+                document.getElementById('werlich-markers').innerText = data.markers;
+                document.getElementById('werlich-icon').innerText = data.icon;
+                panel.style.opacity = '1';
+            }, 200);
+        }
+
+        // Register Logic
+        function updateRegister() {
+            const f = document.getElementById('select-field').value;
+            const t = document.getElementById('select-tenor').value;
+            const m = document.getElementById('select-mode').value;
+            const output = document.getElementById('register-output');
+
+            // Logic Matrix (Simplified for demo purposes)
+            let text = "";
+            
+            // Science
+            if (f === 'science') {
+                if (t === 'expert' && m === 'written') text = "The empirical data suggests a correlation between variable X and Y (p < 0.05). Future studies should address...";
+                else if (t === 'friend' && m === 'spoken') text = "So, I ran the numbers and honestly, it looks like they're connected, which is super cool.";
+                else text = "Research indicates that these elements are linked.";
+            }
+            // Cooking
+            else if (f === 'cooking') {
+                if (m === 'written' && t === 'expert') text = "Preheat oven to 200°C. Julienne the carrots precisely. Reduction of the sauce is critical.";
+                else if (m === 'spoken' && t === 'friend') text = "Dude, just throw the carrots in. Make sure the oven is hot enough!";
+                else text = "Cook the carrots in the oven until done.";
+            }
+            // Politics
+            else {
+                if (t === 'formal' && m === 'spoken') text = "My fellow citizens, we stand today at a crossroads of history requiring decisive action.";
+                else if (m === 'digital') text = "Vote NO on Prop 5! #Election2025 #Vote";
+                else text = "The political situation requires attention.";
+            }
+
+            output.innerText = `"${text}"`;
+            
+            document.getElementById('tag-field').innerText = f.toUpperCase();
+            document.getElementById('tag-tenor').innerText = t.toUpperCase();
+            document.getElementById('tag-mode').innerText = m.toUpperCase();
+        }
+
+        // --- CHART INITIALIZATION ---
+
+        let radarChartInstance = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. Initialize Werlich
+            updateWerlich('descriptive');
+            // 2. Initialize Register
+            updateRegister();
+
+            // 3. Initialize Biber Chart (Radar)
+            const radarCtx = document.getElementById('biberChart').getContext('2d');
+            
+            // Chart Defaults for dark theme
+            Chart.defaults.color = '#a8a29e';
+            Chart.defaults.borderColor = '#44403c';
+
+            radarChartInstance = new Chart(radarCtx, {
+                type: 'radar',
+                data: biberDataSets.convo_academic,
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Brainwave Amplitude (µV)'
-                            }
+                        r: {
+                            angleLines: { color: '#57534e' },
+                            grid: { color: '#44403c' },
+                            pointLabels: {
+                                color: '#e7e5e4',
+                                font: { size: 12, weight: 'bold' }
+                            },
+                            ticks: { display: false, backdropColor: 'transparent' }
                         }
                     },
                     plugins: {
                         legend: {
-                            position: 'bottom',
-                        },
+                            labels: { color: '#fff', font: { size: 14 } }
+                        }
+                    }
+                }
+            });
+
+            // 4. Initialize Hybrid Donut Chart
+            const hybridCtx = document.getElementById('hybridChart').getContext('2d');
+            new Chart(hybridCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Argumentative', 'Expository', 'Descriptive', 'Narrative'],
+                    datasets: [{
+                        data: [40, 30, 20, 10],
+                        backgroundColor: ['#f97316', '#3b82f6', '#22c55e', '#eab308'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: { display: false },
                         tooltip: {
-                            callbacks: {
+                             callbacks: {
                                 label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) {
-                                        label += ': ';
-                                    }
-                                    if (context.parsed.y !== null) {
-                                        label += context.parsed.y + ' µV';
-                                    }
-                                    return label;
+                                    return context.label + ': ' + context.raw + '%';
                                 }
                             }
                         }
                     }
                 }
             });
-
-            const timelineToggles = document.querySelectorAll('.timeline-toggle');
-            timelineToggles.forEach(toggle => {
-                toggle.addEventListener('click', () => {
-                    const content = toggle.nextElementSibling;
-                    const icon = toggle.querySelector('.timeline-icon');
-                    const isHidden = content.classList.contains('hidden');
-                    
-                    document.querySelectorAll('.timeline-content').forEach(c => c.classList.add('hidden'));
-                    document.querySelectorAll('.timeline-icon').forEach(i => i.textContent = '+');
-                    
-                    if (isHidden) {
-                        content.classList.remove('hidden');
-                        icon.textContent = '−';
-                    }
-                });
-            });
-            
-            const linguisticToggles = document.querySelectorAll('.linguistic-toggle');
-            linguisticToggles.forEach(toggle => {
-                toggle.addEventListener('click', () => {
-                    const content = toggle.nextElementSibling;
-                    content.classList.toggle('hidden');
-                });
-            });
-
-            const filterBtns = document.querySelectorAll('.filter-btn');
-            const projectCards = document.querySelectorAll('.project-card');
-            filterBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const filter = btn.getAttribute('data-filter');
-                    
-                    filterBtns.forEach(b => {
-                        b.classList.remove('bg-teal-600', 'text-white');
-                        b.classList.add('bg-slate-200', 'text-slate-700');
-                    });
-                    btn.classList.add('bg-teal-600', 'text-white');
-                    btn.classList.remove('bg-slate-200', 'text-slate-700');
-                    
-                    projectCards.forEach(card => {
-                        if (filter === 'all' || card.getAttribute('data-type') === filter) {
-                            card.style.display = 'block';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
-                });
-            });
-
-            const tabBtns = document.querySelectorAll('.tab-btn');
-            const tabContents = document.querySelectorAll('.tab-content');
-            tabBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const tab = btn.getAttribute('data-tab');
-                    
-                    tabBtns.forEach(b => {
-                        b.classList.remove('active');
-                        b.classList.add('text-slate-600');
-                    });
-                    btn.classList.add('active');
-                    btn.classList.remove('text-slate-600');
-                    
-                    tabContents.forEach(content => {
-                        if (content.id === tab) {
-                            content.classList.remove('hidden');
-                        } else {
-                            content.classList.add('hidden');
-                        }
-                    });
-                });
-            });
-
-            const navLinks = document.querySelectorAll('.sticky-nav a');
-            const sections = document.querySelectorAll('[data-section]');
-            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-            const sidebarNav = document.getElementById('sidebar-nav');
-
-            mobileMenuBtn.addEventListener('click', () => {
-                sidebarNav.classList.toggle('-translate-x-full');
-            });
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        navLinks.forEach(link => {
-                            link.classList.remove('active');
-                            if (link.getAttribute('href') === `#${entry.target.id}`) {
-                                link.classList.add('active');
-                            }
-                        });
-                    }
-                });
-            }, { rootMargin: '-30% 0px -70% 0px', threshold: 0 });
-
-            sections.forEach(section => {
-                observer.observe(section);
-            });
-
-            navLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    if (window.innerWidth < 768) {
-                        sidebarNav.classList.add('-translate-x-full');
-                    }
-                });
-            });
-
         });
+
+        // Update Radar Chart Data
+        function updateChartData(key) {
+            const newData = biberDataSets[key];
+            radarChartInstance.data = newData;
+            radarChartInstance.update();
+        }
+
     </script>
 </body>
 </html>
