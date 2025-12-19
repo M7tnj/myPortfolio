@@ -12,8 +12,8 @@
         :root {
             --bg-deep: #050506;
             --bg-card: #0f0f12;
-            --accent-primary: #bfff00; /* Cyber Lime */
-            --accent-secondary: #00f2ff; /* Electric Cyan */
+            --accent-primary: #bfff00; 
+            --accent-secondary: #00f2ff; 
             --text-main: #f0f0f3;
             --text-muted: #8e8e99;
             --border: rgba(255, 255, 255, 0.08);
@@ -31,13 +31,11 @@
             overflow-x: hidden;
         }
 
-        /* --- Custom Scrollbar --- */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: var(--bg-deep); }
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
 
-        /* --- Typography --- */
         h1, h2, h3, h4 { font-family: 'Outfit', sans-serif; margin: 0; color: #fff; font-weight: 700; }
         h2 { font-size: 2.8rem; letter-spacing: -0.03em; margin-bottom: 1rem; }
         .code-font { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--accent-secondary); }
@@ -48,11 +46,10 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* --- Layout --- */
+     
         .container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
         section { padding: 120px 0; position: relative; }
 
-        /* --- Navigation --- */
         nav {
             position: fixed;
             top: 0;
@@ -76,7 +73,6 @@
         }
         .nav-links a:hover, .nav-links a.active { color: var(--accent-primary); }
 
-        /* --- Hero Section --- */
         #hero {
             height: 100vh;
             display: flex;
@@ -101,7 +97,6 @@
         .btn-secondary { background: transparent; color: #fff; border: 1px solid var(--border); }
         .btn:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -10px var(--accent-primary); }
 
-        /* --- Interactive Volcano Plot --- */
         .chart-container {
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -130,7 +125,7 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.5);
         }
 
-        /* --- Skill Cards --- */
+       
         .tech-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -157,8 +152,7 @@
         .tech-card:hover { border-color: var(--accent-secondary); transform: translateY(-5px); }
         .tech-card:hover::before { transform: translateX(100%); }
         .tech-card i { font-size: 2.2rem; color: var(--accent-primary); margin-bottom: 1.5rem; }
-        
-        /* --- Innovation Section (Multimodal) --- */
+     
         .innovation-layout {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -198,7 +192,7 @@
             z-index: 1;
         }
 
-        /* --- Projects --- */
+       
         .project-masonry { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin-top: 4rem; }
         .project-item {
             background: var(--bg-card);
@@ -216,14 +210,13 @@
         }
         .project-body { padding: 1.5rem; }
 
-        /* --- Mobile --- */
+    
         @media (max-width: 968px) {
             .innovation-layout { grid-template-columns: 1fr; gap: 2rem; }
             h2 { font-size: 2.2rem; }
             .hero-title { font-size: 3.5rem; }
         }
 
-        /* --- Animations --- */
         [data-reveal] { opacity: 0; transform: translateY(30px); transition: 0.8s cubic-bezier(0.215, 0.61, 0.355, 1); }
         [data-reveal].active { opacity: 1; transform: translateY(0); }
     </style>
@@ -246,7 +239,7 @@
     </nav>
 
     <main>
-        <!-- HERO -->
+       
         <section id="hero">
             <div class="container">
                 <div data-reveal class="active">
@@ -265,7 +258,7 @@
             </div>
         </section>
 
-        <!-- VOLCANO PLOT SECTION -->
+      
         <section id="research">
             <div class="container">
                 <div data-reveal>
@@ -288,7 +281,7 @@
                         </div>
                         
                         <svg id="volcanoPlot" class="volcano-svg" viewBox="0 0 1000 400">
-                            <!-- Axes -->
+                          
                             <line x1="100" y1="350" x2="900" y2="350" stroke="#333" stroke-width="2" />
                             <line x1="500" y1="50" x2="500" y2="350" stroke="#222" stroke-dasharray="4" />
                             <text x="500" y="380" fill="#666" text-anchor="middle" font-size="12">Log2 Fold Change</text>
@@ -299,7 +292,7 @@
             </div>
         </section>
 
-        <!-- DIGITAL PATHOLOGY -->
+
         <section id="pathology">
             <div class="container">
                 <div class="innovation-layout">
@@ -323,7 +316,7 @@
                     </div>
                     
                     <div class="multi-modal-graphic" data-reveal>
-                        <!-- Node System representing Multi-modal fusion -->
+                       
                         <div class="node node-center">
                             <i class="fa-solid fa-bolt" style="color: var(--accent-secondary); font-size: 1.5rem; margin-bottom: 5px;"></i>
                             <strong>AI FUSION</strong>
@@ -346,7 +339,7 @@
             </div>
         </section>
 
-        <!-- TECH STACK -->
+     
         <section id="tech" style="background: rgba(255,255,255,0.01);">
             <div class="container">
                 <div data-reveal style="text-align: center;">
@@ -377,7 +370,7 @@
             </div>
         </section>
 
-        <!-- INNOVATION -->
+      
         <section id="innovation">
             <div class="container">
                 <div data-reveal>
@@ -431,7 +424,7 @@
     </footer>
 
     <script>
-        // Data for Volcano Plot (Representative of HER2+/HR- study)
+  
         const genes = [
             { id: 'ERBB2', fc: 4.2, p: 8.5, type: 'up' },
             { id: 'GRB7', fc: 3.8, p: 7.2, type: 'up' },
@@ -440,7 +433,7 @@
             { id: 'BRCA1', fc: -1.5, p: 5.2, type: 'sig' },
             { id: 'MYC', fc: 2.8, p: 6.1, type: 'up' },
             { id: 'CDH1', fc: -4.1, p: 7.9, type: 'down' },
-            // Generate some background noise dots
+          
             ...Array.from({ length: 40 }, () => ({
                 id: 'Gene_' + Math.floor(Math.random()*100),
                 fc: (Math.random() - 0.5) * 6,
@@ -456,7 +449,7 @@
             genes.forEach(gene => {
                 const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                 
-                // Scale data to SVG coordinates
+             
                 const cx = 500 + (gene.fc * 60);
                 const cy = 350 - (gene.p * 30);
                 
@@ -491,7 +484,7 @@
             });
         }
 
-        // Intersection Observer for reveal animations
+    
         const revealCallback = (entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) entry.target.classList.add('active');
@@ -500,7 +493,7 @@
         const revealObserver = new IntersectionObserver(revealCallback, { threshold: 0.1 });
         document.querySelectorAll('[data-reveal]').forEach(el => revealObserver.observe(el));
 
-        // Navigation Highlight
+       
         window.addEventListener('scroll', () => {
             let current = "";
             document.querySelectorAll('section').forEach(section => {
